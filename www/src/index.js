@@ -21,6 +21,7 @@ class GameOfLifeRenderer {
     this.dragStart = null;
     this.lastPaintedCell = null;
     this.dragPaintMode = true;
+    this.showGrid = true;
     this.fillDensity = 30;
     this.toggleAnimation = this.toggleAnimation.bind(this);
     this.reset = this.reset.bind(this);
@@ -28,6 +29,7 @@ class GameOfLifeRenderer {
     this.setSpeed = this.setSpeed.bind(this);
     this.setFillDensity = this.setFillDensity.bind(this);
     this.selectPreset = this.selectPreset.bind(this);
+    this.toggleGrid = this.toggleGrid.bind(this);
     this.initControls();
     this.debounceTimer = null;
     window.addEventListener("resize", () => {
@@ -72,8 +74,7 @@ class GameOfLifeRenderer {
     this.universe = Universe.new_with_size(layout.cols, layout.rows);
     this.canvas.width = layout.width;
     this.canvas.height = layout.height;
-    this.drawGrid();
-    this.drawCells();
+    this.render();
     this.updateStats();
     this.canvas.addEventListener("mousemove", (e) => this.handleMouseMove(e));
     this.canvas.addEventListener("mouseleave", () => this.handleMouseLeave());
@@ -92,8 +93,7 @@ class GameOfLifeRenderer {
       this.canvas.width = layout.width;
       this.canvas.height = layout.height;
       this.generationCount = 0;
-    this.drawGrid();
-    this.drawCells();
+    this.render();
     this.updateStats();
     document.getElementById("fill-label").textContent = `Fill ${this.fillDensity}%`;
     document.getElementById("speed-label").textContent = `Speed ${this.speed}%`;
@@ -187,6 +187,12 @@ class GameOfLifeRenderer {
     this.ctx.fillRect(col * (s + gap) + 1, row * (s + gap) + 1, s, s);
   }
 
+  render() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    if (this.showGrid) this.drawGrid();
+    this.drawCells();
+  }
+
   drawGrid() {
     if (!this.universe) return;
     const w = this.universe.width();
@@ -233,6 +239,8 @@ class GameOfLifeRenderer {
     const fillSlider = document.getElementById("fill-density");
     if (playPauseButton) playPauseButton.addEventListener("click", this.toggleAnimation);
     if (resetButton) resetButton.addEventListener("click", this.reset);
+    const gridToggle = document.getElementById("grid-toggle");
+    if (gridToggle) gridToggle.addEventListener("click", this.toggleGrid);
     if (randomizeButton) randomizeButton.addEventListener("click", this.randomize);
     if (speedSlider) speedSlider.addEventListener("input", this.setSpeed);
     if (fillSlider) fillSlider.addEventListener("input", this.setFillDensity);
@@ -275,6 +283,11 @@ class GameOfLifeRenderer {
     this.universe.randomize_with_density(this.fillDensity / 100);
     this.drawCells();
     this.updateStats();
+  }
+
+  toggleGrid() {
+    this.showGrid = !this.showGrid;
+    this.render();
   }
 
   setSpeedPreset(value) {
@@ -349,8 +362,7 @@ class GameOfLifeRenderer {
     const h = this.universe.height();
     this.universe = Universe.new_with_size(w, h);
     this.generationCount = 0;
-    this.drawGrid();
-    this.drawCells();
+    this.render();
     this.updateStats();
   }
 }
