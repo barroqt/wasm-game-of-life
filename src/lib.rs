@@ -112,6 +112,14 @@ impl Universe {
             .collect();
     }
 
+    pub fn toggle_cell(&mut self, row: u32, col: u32) {
+        let idx = self.get_index(row, col);
+        self.cells[idx] = match self.cells[idx] {
+            Cell::Alive => Cell::Dead,
+            Cell::Dead => Cell::Alive,
+        };
+    }
+
     pub fn render(&self) -> String {
         self.to_string()
     }

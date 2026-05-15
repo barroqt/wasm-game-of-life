@@ -71,6 +71,7 @@ class GameOfLifeRenderer {
     this.updateStats();
     this.canvas.addEventListener("mousemove", (e) => this.handleMouseMove(e));
     this.canvas.addEventListener("mouseleave", () => this.handleMouseLeave());
+    this.canvas.addEventListener("click", (e) => this.handleClick(e));
   }
 
   handleResize() {
@@ -126,6 +127,17 @@ class GameOfLifeRenderer {
       this.drawCells();
       this.canvas.style.cursor = "crosshair";
     }
+  }
+
+  handleClick(e) {
+    if (!this.universe) return;
+    const { row, col } = this.getCellCoords(e);
+    const w = this.universe.width();
+    const h = this.universe.height();
+    if (row < 0 || row >= h || col < 0 || col >= w) return;
+    this.universe.toggle_cell(row, col);
+    this.drawCells();
+    this.updateStats();
   }
 
   drawHighlight() {
