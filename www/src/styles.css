@@ -108,6 +108,29 @@ button:active {
   color: #a0a0a0;
 }
 
+select {
+  background: transparent;
+  color: #505050;
+  border: 1px solid #1a1a1a;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: color 0.2s, border-color 0.2s;
+  outline: none;
+}
+
+select:hover {
+  color: #d4d4d4;
+  border-color: #3a3a3a;
+}
+
+select option {
+  background: #111;
+  color: #a0a0a0;
+}
+
 .slider-label {
   font-size: 0.7rem;
   color: #505050;

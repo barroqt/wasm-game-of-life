@@ -1,4 +1,5 @@
 import init, { Universe } from "../../pkg/wasm_game_of_life.js";
+import { PATTERNS } from "./patterns.js";
 
 const GRID_COLOR = "#1a1a1a";
 const DEAD_COLOR = "#080808";
@@ -26,6 +27,7 @@ class GameOfLifeRenderer {
     this.randomize = this.randomize.bind(this);
     this.setSpeed = this.setSpeed.bind(this);
     this.setFillDensity = this.setFillDensity.bind(this);
+    this.selectPreset = this.selectPreset.bind(this);
     this.initControls();
     this.debounceTimer = null;
     window.addEventListener("resize", () => {
@@ -234,6 +236,8 @@ class GameOfLifeRenderer {
     if (randomizeButton) randomizeButton.addEventListener("click", this.randomize);
     if (speedSlider) speedSlider.addEventListener("input", this.setSpeed);
     if (fillSlider) fillSlider.addEventListener("input", this.setFillDensity);
+    const presetSelect = document.getElementById("presets");
+    if (presetSelect) presetSelect.addEventListener("change", this.selectPreset);
   }
 
   toggleAnimation() {
@@ -277,7 +281,40 @@ class GameOfLifeRenderer {
 
   setSpeed(e) {
     this.speed = parseInt(e.target.value, 10);
-    document.getElementById("speed-label").textContent = `Speed ${this.speed}%`;
+    document.getElementById("speed-label").textContent = `Speed ${this.speed}`;
+  }
+
+  selectPreset(e) {
+    const name = e.target.value;
+    if (!name || !this.universe) return;
+    e.target.value = "";
+    this.pause();
+    document.getElementById("play-pause").textContent = "Play";
+    this.generationCount = 0;
+    this.placePattern(name);
+    this.drawCells();
+    this.updateStats();
+  }
+
+  placePattern(name) {
+    const cells = PATTERNS[name];
+    if (!cells) return;
+    const w = this.universe.width();
+    const h = this.universe.height();
+    let maxR = 0, maxC = 0;
+    for (const [r, c] of cells) {
+      if (r > maxR) maxR = r;
+      if (c > maxC) maxC = c;
+    }
+    const patternH = maxR + 1;
+    const patternW = maxC + 1;
+    if (patternW > w || patternH > h) return;
+    const offsetR = Math.floor((h - patternH) / 2);
+    const offsetC = Math.floor((w - patternW) / 2);
+    this.universe = Universe.new_with_size(w, h);
+    for (const [r, c] of cells) {
+      this.universe.set_cell(offsetR + r, offsetC + c, true);
+    }
   }
 
   updateStats() {
