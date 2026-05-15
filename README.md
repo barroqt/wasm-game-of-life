@@ -1,5 +1,7 @@
 # Game of Life
 
+**Live:** [barroqt.github.io/wasm-game-of-life](https://barroqt.github.io/wasm-game-of-life/)
+
 Conway's Game of Life is a **cellular automaton** — a zero-player game where an initial grid of cells evolves according to four simple rules:
 
 1. **Underpopulation** — a live cell with < 2 live neighbors dies
