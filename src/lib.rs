@@ -120,6 +120,16 @@ impl Universe {
         };
     }
 
+    pub fn set_cell(&mut self, row: u32, col: u32, alive: bool) {
+        let idx = self.get_index(row, col);
+        self.cells[idx] = if alive { Cell::Alive } else { Cell::Dead };
+    }
+
+    pub fn is_alive(&self, row: u32, col: u32) -> bool {
+        let idx = self.get_index(row, col);
+        self.cells[idx] == Cell::Alive
+    }
+
     pub fn render(&self) -> String {
         self.to_string()
     }

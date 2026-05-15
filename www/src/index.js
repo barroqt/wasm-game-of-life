@@ -16,6 +16,10 @@ class GameOfLifeRenderer {
     this.speed = 50;
     this.cellSize = 8;
     this.hoverCell = null;
+    this.isDragging = false;
+    this.dragStart = null;
+    this.lastPaintedCell = null;
+    this.dragPaintMode = true;
     this.fillDensity = 30;
     this.toggleAnimation = this.toggleAnimation.bind(this);
     this.reset = this.reset.bind(this);
@@ -71,7 +75,8 @@ class GameOfLifeRenderer {
     this.updateStats();
     this.canvas.addEventListener("mousemove", (e) => this.handleMouseMove(e));
     this.canvas.addEventListener("mouseleave", () => this.handleMouseLeave());
-    this.canvas.addEventListener("click", (e) => this.handleClick(e));
+    this.canvas.addEventListener("mousedown", (e) => this.handleMouseDown(e));
+    this.canvas.addEventListener("mouseup", (e) => this.handleMouseUp(e));
   }
 
   handleResize() {
@@ -96,12 +101,38 @@ class GameOfLifeRenderer {
 
   getCellCoords(e) {
     const rect = this.canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const scaleX = this.canvas.width / rect.width;
+    const scaleY = this.canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
     const gap = 1;
     const col = Math.floor(x / (this.cellSize + gap));
     const row = Math.floor(y / (this.cellSize + gap));
     return { row, col };
+  }
+
+  handleMouseDown(e) {
+    if (!this.universe) return;
+    const { row, col } = this.getCellCoords(e);
+    if (row < 0 || row >= this.universe.height() || col < 0 || col >= this.universe.width()) return;
+    this.isDragging = true;
+    this.dragStart = { row, col };
+    this.lastPaintedCell = null;
+    this.dragPaintMode = !this.universe.is_alive(row, col);
+  }
+
+  handleMouseUp(e) {
+    if (!this.universe || !this.isDragging) return;
+    const { row, col } = this.getCellCoords(e);
+    if (this.dragStart && this.dragStart.row === row && this.dragStart.col === col) {
+      this.universe.toggle_cell(row, col);
+      this.drawCells();
+      this.updateStats();
+    }
+    this.isDragging = false;
+    this.dragPaintMode = false;
+    this.dragStart = null;
+    this.lastPaintedCell = null;
   }
 
   handleMouseMove(e) {
@@ -113,6 +144,16 @@ class GameOfLifeRenderer {
       this.handleMouseLeave();
       return;
     }
+    if (this.isDragging) {
+      if (!this.lastPaintedCell || this.lastPaintedCell.row !== row || this.lastPaintedCell.col !== col) {
+        this.universe.set_cell(row, col, this.dragPaintMode);
+        this.lastPaintedCell = { row, col };
+        this.hoverCell = { row, col };
+        this.drawCells();
+        this.updateStats();
+      }
+      return;
+    }
     if (!this.hoverCell || this.hoverCell.row !== row || this.hoverCell.col !== col) {
       this.hoverCell = { row, col };
       this.drawCells();
@@ -122,22 +163,17 @@ class GameOfLifeRenderer {
   }
 
   handleMouseLeave() {
+    if (this.isDragging) {
+      this.isDragging = false;
+      this.dragPaintMode = true;
+      this.dragStart = null;
+      this.lastPaintedCell = null;
+    }
     if (this.hoverCell) {
       this.hoverCell = null;
       this.drawCells();
       this.canvas.style.cursor = "crosshair";
     }
-  }
-
-  handleClick(e) {
-    if (!this.universe) return;
-    const { row, col } = this.getCellCoords(e);
-    const w = this.universe.width();
-    const h = this.universe.height();
-    if (row < 0 || row >= h || col < 0 || col >= w) return;
-    this.universe.toggle_cell(row, col);
-    this.drawCells();
-    this.updateStats();
   }
 
   drawHighlight() {
