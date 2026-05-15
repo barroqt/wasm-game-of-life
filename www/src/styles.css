@@ -139,6 +139,26 @@ select option {
   user-select: none;
 }
 
+.speed-preset {
+  background: transparent;
+  color: #3a3a3a;
+  border: none;
+  padding: 0.15rem 0.4rem;
+  font-size: 0.65rem;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: color 0.2s;
+}
+
+.speed-preset:hover {
+  color: #a0a0a0;
+}
+
+.speed-preset:active {
+  color: #d4d4d4;
+}
+
 .speed-control {
   display: flex;
   align-items: center;

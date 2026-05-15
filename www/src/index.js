@@ -238,6 +238,9 @@ class GameOfLifeRenderer {
     if (fillSlider) fillSlider.addEventListener("input", this.setFillDensity);
     const presetSelect = document.getElementById("presets");
     if (presetSelect) presetSelect.addEventListener("change", this.selectPreset);
+    document.querySelectorAll(".speed-preset").forEach((btn) => {
+      btn.addEventListener("click", () => this.setSpeedPreset(parseInt(btn.dataset.speed, 10)));
+    });
   }
 
   toggleAnimation() {
@@ -272,6 +275,12 @@ class GameOfLifeRenderer {
     this.universe.randomize_with_density(this.fillDensity / 100);
     this.drawCells();
     this.updateStats();
+  }
+
+  setSpeedPreset(value) {
+    this.speed = value;
+    document.getElementById("speed").value = value;
+    document.getElementById("speed-label").textContent = `Speed ${this.speed}`;
   }
 
   setFillDensity(e) {
