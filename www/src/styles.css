@@ -67,7 +67,7 @@ h1 {
 
 @keyframes pulse {
   0% { color: #808080; }
-  40% { color: #d4d4d4; }
+  40% { color: #c9b89b; }
   100% { color: #808080; }
 }
 
@@ -83,7 +83,7 @@ nav {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.5rem 1.25rem;
+  padding: 0.75rem 1.5rem 1rem;
 }
 
 button {
@@ -100,7 +100,7 @@ button {
 }
 
 button:hover {
-  color: #d4d4d4;
+  color: #c9b89b;
   border-color: #3a3a3a;
 }
 
@@ -122,13 +122,32 @@ select {
 }
 
 select:hover {
-  color: #d4d4d4;
+  color: #c9b89b;
   border-color: #3a3a3a;
 }
 
 select option {
   background: #111;
   color: #a0a0a0;
+}
+
+footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1.5rem 0.75rem;
+  font-size: 0.7rem;
+  user-select: none;
+}
+
+footer a {
+  color: #808080;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+footer a:hover {
+  color: #c9b89b;
 }
 
 .slider-label {
@@ -152,11 +171,11 @@ select option {
 }
 
 .speed-preset:hover {
-  color: #a0a0a0;
+  color: #c9b89b;
 }
 
 .speed-preset:active {
-  color: #d4d4d4;
+  color: #c9b89b;
 }
 
 .speed-control {
@@ -198,7 +217,7 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
-  background: #d4d4d4;
+  background: #c9b89b;
   transform: scale(1.3);
 }
 
@@ -210,6 +229,16 @@ input[type="range"]::-moz-range-thumb {
   cursor: pointer;
   border: none;
   transition: background 0.2s;
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+  background: #c9b89b;
+}
+
+input[type="range"]::-moz-range-track {
+  background: #1a1a1a;
+  height: 2px;
+  border-radius: 1px;
 }
 
 input[type="range"]::-moz-range-thumb:hover {

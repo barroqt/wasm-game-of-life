@@ -3,8 +3,8 @@ import { PATTERNS } from "./patterns.js";
 
 const GRID_COLOR = "#1a1a1a";
 const DEAD_COLOR = "#080808";
-const ALIVE_COLOR = "#d4d4d4";
-const HIGHLIGHT_COLOR = "rgba(212, 212, 212, 0.06)";
+const ALIVE_COLOR = "#c9b89b";
+const HIGHLIGHT_COLOR = "rgba(201, 184, 155, 0.1)";
 
 class GameOfLifeRenderer {
   constructor() {
@@ -294,7 +294,7 @@ class GameOfLifeRenderer {
   setSpeedPreset(value) {
     this.speed = value;
     document.getElementById("speed").value = value;
-    document.getElementById("speed-label").textContent = `Speed ${this.speed}`;
+    document.getElementById("speed-label").textContent = `Speed ${this.speed}%`;
   }
 
   setFillDensity(e) {
@@ -304,7 +304,7 @@ class GameOfLifeRenderer {
 
   setSpeed(e) {
     this.speed = parseInt(e.target.value, 10);
-    document.getElementById("speed-label").textContent = `Speed ${this.speed}`;
+    document.getElementById("speed-label").textContent = `Speed ${this.speed}%`;
   }
 
   selectPreset(e) {
