@@ -3,26 +3,34 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Conway's Game of Life — a cellular automaton in Rust + WebAssembly" />
+    <meta property="og:title" content="Game of Life" />
+    <meta property="og:description" content="Conway's Game of Life implemented in Rust, compiled to WebAssembly." />
+    <meta name="twitter:card" content="summary" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23080808'/><rect x='2' y='2' width='4' height='4' fill='%23d4d4d4'/><rect x='10' y='6' width='4' height='4' fill='%23d4d4d4'/><rect x='4' y='10' width='4' height='4' fill='%23d4d4d4'/></svg>" />
     <title>Game of Life</title>
     <link rel="stylesheet" href="./src/styles.css" />
   </head>
   <body>
-    <div class="container">
-      <h1>Game of Life</h1>
-      <div class="game-controls">
+    <div id="app">
+      <header>
+        <h1>Game of Life</h1>
+        <div class="stats">
+          <span class="stat-value" id="generation-count">0</span>
+          <span class="stat-sep">·</span>
+          <span class="stat-value" id="alive-cells">0</span>
+          <span class="stat-label">alive</span>
+        </div>
+      </header>
+      <canvas id="game-of-life-canvas"></canvas>
+      <nav>
         <button id="play-pause">Play</button>
         <button id="reset">Reset</button>
         <button id="randomize">Randomize</button>
         <div class="speed-control">
-          <label for="speed">Simulation Speed:</label>
           <input type="range" id="speed" min="1" max="100" value="50" />
         </div>
-      </div>
-      <canvas id="game-of-life-canvas"></canvas>
-      <div class="stats">
-        <span id="generation-count">Generation: 0</span>
-        <span id="alive-cells">Alive Cells: 0</span>
-      </div>
+      </nav>
     </div>
     <script type="module" src="./src/index.js"></script>
   </body>

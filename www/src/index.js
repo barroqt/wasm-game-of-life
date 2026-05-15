@@ -1,89 +1,174 @@
 import init, { Universe } from "../../pkg/wasm_game_of_life.js";
 
-const CELL_SIZE = 8;
-const GRID_COLOR = "#2a2a4e";
-const DEAD_COLOR = "#0f3460";
-const ALIVE_COLOR = "#536dfe";
+const GRID_COLOR = "#1a1a1a";
+const DEAD_COLOR = "#080808";
+const ALIVE_COLOR = "#d4d4d4";
+const HIGHLIGHT_COLOR = "rgba(212, 212, 212, 0.06)";
 
 class GameOfLifeRenderer {
   constructor() {
     this.universe = null;
+    this.wasm = null;
     this.canvas = document.getElementById("game-of-life-canvas");
     this.ctx = this.canvas.getContext("2d");
     this.animationId = null;
     this.generationCount = 0;
     this.speed = 50;
+    this.cellSize = 8;
+    this.hoverCell = null;
     this.initControls();
     this.toggleAnimation = this.toggleAnimation.bind(this);
     this.reset = this.reset.bind(this);
     this.randomize = this.randomize.bind(this);
     this.setSpeed = this.setSpeed.bind(this);
+    this.debounceTimer = null;
+    window.addEventListener("resize", () => {
+      clearTimeout(this.debounceTimer);
+      this.debounceTimer = setTimeout(() => this.handleResize(), 150);
+    });
+  }
+
+  computeLayout() {
+    const headerEl = document.querySelector("header");
+    const navEl = document.querySelector("nav");
+    const headerH = headerEl ? headerEl.offsetHeight : 60;
+    const navH = navEl ? navEl.offsetHeight : 56;
+    const availW = window.innerWidth;
+    const availH = window.innerHeight - headerH - navH;
+    const gap = 1;
+
+    let cellSize = 12;
+    let cols = Math.floor(availW / (cellSize + gap));
+    let rows = Math.floor(availH / (cellSize + gap));
+    if (cols < 8) cols = 8;
+    if (rows < 8) rows = 8;
+
+    const cellFromW = Math.floor((availW - cols * gap - 1) / cols);
+    const cellFromH = Math.floor((availH - rows * gap - 1) / rows);
+    cellSize = Math.max(3, Math.min(cellFromW, cellFromH, 24));
+
+    cols = Math.floor((availW - 1) / (cellSize + gap));
+    rows = Math.floor((availH - 1) / (cellSize + gap));
+    if (cols < 8) cols = 8;
+    if (rows < 8) rows = 8;
+
+    const canvasW = (cellSize + gap) * cols + 1;
+    const canvasH = (cellSize + gap) * rows + 1;
+    return { cols, rows, cellSize, width: Math.ceil(canvasW), height: Math.ceil(canvasH) };
   }
 
   async init() {
     this.wasm = await init();
-    this.universe = Universe.new();
-    this.setupCanvas();
+    const layout = this.computeLayout();
+    this.cellSize = layout.cellSize;
+    this.universe = Universe.new_with_size(layout.cols, layout.rows);
+    this.canvas.width = layout.width;
+    this.canvas.height = layout.height;
     this.drawGrid();
     this.drawCells();
+    this.updateStats();
+    this.canvas.addEventListener("mousemove", (e) => this.handleMouseMove(e));
+    this.canvas.addEventListener("mouseleave", () => this.handleMouseLeave());
   }
 
-  setupCanvas() {
-    const width = this.universe.width();
-    const height = this.universe.height();
-    this.canvas.height = (CELL_SIZE + 1) * height + 1;
-    this.canvas.width = (CELL_SIZE + 1) * width + 1;
+  handleResize() {
+    if (!this.universe) return;
+    const layout = this.computeLayout();
+    this.cellSize = layout.cellSize;
+    if (this.canvas.width !== layout.width || this.canvas.height !== layout.height) {
+      const wasRunning = this.animationId !== null;
+      if (wasRunning) this.pause();
+      this.universe = Universe.new_with_size(layout.cols, layout.rows);
+      this.canvas.width = layout.width;
+      this.canvas.height = layout.height;
+      this.generationCount = 0;
+      this.drawGrid();
+      this.drawCells();
+      this.updateStats();
+      if (wasRunning) this.play();
+    }
+  }
+
+  getCellCoords(e) {
+    const rect = this.canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const gap = 1;
+    const col = Math.floor(x / (this.cellSize + gap));
+    const row = Math.floor(y / (this.cellSize + gap));
+    return { row, col };
+  }
+
+  handleMouseMove(e) {
+    if (!this.universe) return;
+    const { row, col } = this.getCellCoords(e);
+    const w = this.universe.width();
+    const h = this.universe.height();
+    if (row < 0 || row >= h || col < 0 || col >= w) {
+      this.handleMouseLeave();
+      return;
+    }
+    if (!this.hoverCell || this.hoverCell.row !== row || this.hoverCell.col !== col) {
+      this.hoverCell = { row, col };
+      this.drawCells();
+      this.drawHighlight();
+      this.canvas.style.cursor = "pointer";
+    }
+  }
+
+  handleMouseLeave() {
+    if (this.hoverCell) {
+      this.hoverCell = null;
+      this.drawCells();
+      this.canvas.style.cursor = "crosshair";
+    }
+  }
+
+  drawHighlight() {
+    if (!this.hoverCell || !this.universe) return;
+    const { row, col } = this.hoverCell;
+    const s = this.cellSize;
+    const gap = 1;
+    this.ctx.fillStyle = HIGHLIGHT_COLOR;
+    this.ctx.fillRect(col * (s + gap) + 1, row * (s + gap) + 1, s, s);
   }
 
   drawGrid() {
-    const width = this.universe.width();
-    const height = this.universe.height();
-
-    this.ctx.beginPath();
+    if (!this.universe) return;
+    const w = this.universe.width();
+    const h = this.universe.height();
+    const s = this.cellSize;
+    const gap = 1;
     this.ctx.strokeStyle = GRID_COLOR;
-
-    // Vertical lines
-    for (let x = 0; x <= width; x++) {
-      this.ctx.moveTo(x * (CELL_SIZE + 1) + 1, 0);
-      this.ctx.lineTo(x * (CELL_SIZE + 1) + 1, (CELL_SIZE + 1) * height + 1);
+    this.ctx.beginPath();
+    for (let x = 0; x <= w; x++) {
+      this.ctx.moveTo(x * (s + gap) + 1, 0);
+      this.ctx.lineTo(x * (s + gap) + 1, (s + gap) * h + 1);
     }
-
-    // Horizontal lines
-    for (let y = 0; y <= height; y++) {
-      this.ctx.moveTo(0, y * (CELL_SIZE + 1) + 1);
-      this.ctx.lineTo((CELL_SIZE + 1) * width + 1, y * (CELL_SIZE + 1) + 1);
+    for (let y = 0; y <= h; y++) {
+      this.ctx.moveTo(0, y * (s + gap) + 1);
+      this.ctx.lineTo((s + gap) * w + 1, y * (s + gap) + 1);
     }
-
     this.ctx.stroke();
   }
 
   drawCells() {
-    const width = this.universe.width();
-    const height = this.universe.height();
-    const cells = new Uint8Array(
-      this.wasm.memory.buffer,
-      this.universe.cells(),
-      width * height
-    );
-
+    if (!this.universe) return;
+    const w = this.universe.width();
+    const h = this.universe.height();
+    const cells = new Uint8Array(this.wasm.memory.buffer, this.universe.cells(), w * h);
+    const s = this.cellSize;
+    const gap = 1;
     this.ctx.beginPath();
-
-    for (let row = 0; row < height; row++) {
-      for (let col = 0; col < width; col++) {
-        const idx = row * width + col;
-
+    for (let row = 0; row < h; row++) {
+      for (let col = 0; col < w; col++) {
+        const idx = row * w + col;
         this.ctx.fillStyle = cells[idx] === 0 ? DEAD_COLOR : ALIVE_COLOR;
-
-        this.ctx.fillRect(
-          col * (CELL_SIZE + 1) + 1,
-          row * (CELL_SIZE + 1) + 1,
-          CELL_SIZE,
-          CELL_SIZE
-        );
+        this.ctx.fillRect(col * (s + gap) + 1, row * (s + gap) + 1, s, s);
       }
     }
-
     this.ctx.stroke();
+    this.drawHighlight();
   }
 
   initControls() {
@@ -91,18 +176,10 @@ class GameOfLifeRenderer {
     const resetButton = document.getElementById("reset");
     const randomizeButton = document.getElementById("randomize");
     const speedSlider = document.getElementById("speed");
-    if (playPauseButton) {
-      playPauseButton.addEventListener("click", this.toggleAnimation);
-    }
-    if (resetButton) {
-      resetButton.addEventListener("click", this.reset);
-    }
-    if (randomizeButton) {
-      randomizeButton.addEventListener("click", this.randomize);
-    }
-    if (speedSlider) {
-      speedSlider.addEventListener("input", this.setSpeed);
-    }
+    if (playPauseButton) playPauseButton.addEventListener("click", this.toggleAnimation);
+    if (resetButton) resetButton.addEventListener("click", this.reset);
+    if (randomizeButton) randomizeButton.addEventListener("click", this.randomize);
+    if (speedSlider) speedSlider.addEventListener("input", this.setSpeed);
   }
 
   toggleAnimation() {
@@ -133,11 +210,10 @@ class GameOfLifeRenderer {
   }
 
   randomize() {
-    if (this.universe) {
-      this.universe.randomize();
-      this.drawCells();
-      this.updateStats();
-    }
+    if (!this.universe) return;
+    this.universe.randomize();
+    this.drawCells();
+    this.updateStats();
   }
 
   setSpeed(e) {
@@ -145,34 +221,37 @@ class GameOfLifeRenderer {
   }
 
   updateStats() {
+    if (!this.universe) return;
     const cells = new Uint8Array(
       this.wasm.memory.buffer,
       this.universe.cells(),
       this.universe.width() * this.universe.height()
     );
-    const alive = cells.reduce((sum, c) => sum + c, 0);
-    document.getElementById("alive-cells").textContent = `Alive Cells: ${alive}`;
-    document.getElementById(
-      "generation-count"
-    ).textContent = `Generation: ${this.generationCount}`;
+    document.getElementById("alive-cells").textContent = `${cells.reduce((s, c) => s + c, 0)}`;
+    const genEl = document.getElementById("generation-count");
+    genEl.textContent = `${this.generationCount}`;
+    genEl.classList.remove("pulse");
+    void genEl.offsetWidth;
+    genEl.classList.add("pulse");
   }
 
   reset() {
-    if (this.universe) {
-      this.pause();
-      document.getElementById("play-pause").textContent = "Play";
-      this.universe = Universe.new();
-      this.generationCount = 0;
-      this.drawCells();
-      this.updateStats();
-    }
+    if (!this.universe) return;
+    this.pause();
+    document.getElementById("play-pause").textContent = "Play";
+    const w = this.universe.width();
+    const h = this.universe.height();
+    this.universe = Universe.new_with_size(w, h);
+    this.generationCount = 0;
+    this.drawGrid();
+    this.drawCells();
+    this.updateStats();
   }
 }
 
 async function initApp() {
-  const gameRenderer = new GameOfLifeRenderer();
-
-  await gameRenderer.init();
+  const app = new GameOfLifeRenderer();
+  await app.init();
 }
 
 initApp();
