@@ -3,6 +3,7 @@ import wasmPlugin from "vite-plugin-wasm";
 import topLevelAwait from "vite-plugin-top-level-await";
 
 export default defineConfig({
+  base: process.env.BASE || "/",
   plugins: [wasmPlugin(), topLevelAwait()],
   optimizeDeps: {
     // Explicitly include WASM files
