@@ -17,6 +17,7 @@ class GameOfLifeRenderer {
     this.speed = 50;
     this.cellSize = 8;
     this.hoverCell = null;
+    this.tickTimestamps = [];
     this.isDragging = false;
     this.dragStart = null;
     this.lastPaintedCell = null;
@@ -341,12 +342,16 @@ class GameOfLifeRenderer {
 
   updateStats() {
     if (!this.universe) return;
-    const cells = new Uint8Array(
-      this.wasm.memory.buffer,
-      this.universe.cells(),
-      this.universe.width() * this.universe.height()
-    );
-    document.getElementById("alive-cells").textContent = `${cells.reduce((s, c) => s + c, 0)}`;
+    const w = this.universe.width();
+    const h = this.universe.height();
+    const cells = new Uint8Array(this.wasm.memory.buffer, this.universe.cells(), w * h);
+    const alive = cells.reduce((s, c) => s + c, 0);
+    document.getElementById("alive-cells").textContent = `${alive}`;
+    document.getElementById("alive-density").textContent = `${((alive / (w * h)) * 100).toFixed(1)}%`;
+    const now = performance.now();
+    this.tickTimestamps = this.tickTimestamps.filter(t => now - t < 1000);
+    this.tickTimestamps.push(now);
+    document.getElementById("gen-rate").textContent = `${this.tickTimestamps.length}`;
     const genEl = document.getElementById("generation-count");
     genEl.textContent = `${this.generationCount}`;
     genEl.classList.remove("pulse");
@@ -362,6 +367,7 @@ class GameOfLifeRenderer {
     const h = this.universe.height();
     this.universe = Universe.new_with_size(w, h);
     this.generationCount = 0;
+    this.tickTimestamps = [];
     this.render();
     this.updateStats();
   }

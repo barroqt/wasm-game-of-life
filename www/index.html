@@ -16,10 +16,17 @@
       <header>
         <h1>Game of Life</h1>
         <div class="stats">
+          <span class="stat-label">Gen</span>
           <span class="stat-value" id="generation-count">0</span>
           <span class="stat-sep">·</span>
+          <span class="stat-label">Alive</span>
           <span class="stat-value" id="alive-cells">0</span>
-          <span class="stat-label">alive</span>
+          <span class="stat-sep">·</span>
+          <span class="stat-label">Density</span>
+          <span class="stat-value" id="alive-density">0.0%</span>
+          <span class="stat-sep">·</span>
+          <span class="stat-label">Gen/s</span>
+          <span class="stat-value" id="gen-rate">0/s</span>
         </div>
       </header>
       <canvas id="game-of-life-canvas"></canvas>
