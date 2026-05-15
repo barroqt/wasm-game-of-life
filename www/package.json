@@ -1,0 +1,20 @@
+{
+  "name": "rust-wasm-game-of-life",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "wasm:build": "wasm-pack build .. --target web --dev",
+    "dev": "npm run wasm:build && vite",
+    "build": "npm run wasm:build && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "rollup": "^4.60.4",
+    "wasm-game-of-life": "file:../pkg"
+  },
+  "devDependencies": {
+    "vite": "^4.3.9",
+    "vite-plugin-top-level-await": "^1.3.1",
+    "vite-plugin-wasm": "^3.2.2"
+  }
+}

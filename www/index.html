@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Game of Life</title>
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Game of Life</h1>
+      <div class="game-controls">
+        <button id="play-pause">Play</button>
+        <button id="reset">Reset</button>
+        <button id="randomize">Randomize</button>
+        <div class="speed-control">
+          <label for="speed">Simulation Speed:</label>
+          <input type="range" id="speed" min="1" max="100" value="50" />
+        </div>
+      </div>
+      <canvas id="game-of-life-canvas"></canvas>
+      <div class="stats">
+        <span id="generation-count">Generation: 0</span>
+        <span id="alive-cells">Alive Cells: 0</span>
+      </div>
+    </div>
+    <script type="module" src="./src/index.js"></script>
+  </body>
+</html>
