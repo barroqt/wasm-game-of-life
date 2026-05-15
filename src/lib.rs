@@ -87,15 +87,7 @@ impl Universe {
     }
 
     pub fn new_with_size(width: u32, height: u32) -> Universe {
-        let cells = (0..width * height)
-            .map(|i| {
-                if i % 2 == 0 || i % 7 == 0 {
-                    Cell::Alive
-                } else {
-                    Cell::Dead
-                }
-            })
-            .collect();
+        let cells = vec![Cell::Dead; (width * height) as usize];
 
         Universe {
             width,
@@ -105,9 +97,13 @@ impl Universe {
     }
 
     pub fn randomize(&mut self) {
+        self.randomize_with_density(0.5);
+    }
+
+    pub fn randomize_with_density(&mut self, density: f64) {
         self.cells = (0..self.width * self.height)
             .map(|_| {
-                if js_sys::Math::random() < 0.5 {
+                if js_sys::Math::random() < density {
                     Cell::Alive
                 } else {
                     Cell::Dead

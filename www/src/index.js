@@ -16,11 +16,13 @@ class GameOfLifeRenderer {
     this.speed = 50;
     this.cellSize = 8;
     this.hoverCell = null;
-    this.initControls();
+    this.fillDensity = 30;
     this.toggleAnimation = this.toggleAnimation.bind(this);
     this.reset = this.reset.bind(this);
     this.randomize = this.randomize.bind(this);
     this.setSpeed = this.setSpeed.bind(this);
+    this.setFillDensity = this.setFillDensity.bind(this);
+    this.initControls();
     this.debounceTimer = null;
     window.addEventListener("resize", () => {
       clearTimeout(this.debounceTimer);
@@ -82,9 +84,11 @@ class GameOfLifeRenderer {
       this.canvas.width = layout.width;
       this.canvas.height = layout.height;
       this.generationCount = 0;
-      this.drawGrid();
-      this.drawCells();
-      this.updateStats();
+    this.drawGrid();
+    this.drawCells();
+    this.updateStats();
+    document.getElementById("fill-label").textContent = `Fill ${this.fillDensity}%`;
+    document.getElementById("speed-label").textContent = `Speed ${this.speed}%`;
       if (wasRunning) this.play();
     }
   }
@@ -176,10 +180,12 @@ class GameOfLifeRenderer {
     const resetButton = document.getElementById("reset");
     const randomizeButton = document.getElementById("randomize");
     const speedSlider = document.getElementById("speed");
+    const fillSlider = document.getElementById("fill-density");
     if (playPauseButton) playPauseButton.addEventListener("click", this.toggleAnimation);
     if (resetButton) resetButton.addEventListener("click", this.reset);
     if (randomizeButton) randomizeButton.addEventListener("click", this.randomize);
     if (speedSlider) speedSlider.addEventListener("input", this.setSpeed);
+    if (fillSlider) fillSlider.addEventListener("input", this.setFillDensity);
   }
 
   toggleAnimation() {
@@ -211,13 +217,19 @@ class GameOfLifeRenderer {
 
   randomize() {
     if (!this.universe) return;
-    this.universe.randomize();
+    this.universe.randomize_with_density(this.fillDensity / 100);
     this.drawCells();
     this.updateStats();
   }
 
+  setFillDensity(e) {
+    this.fillDensity = parseInt(e.target.value, 10);
+    document.getElementById("fill-label").textContent = `Fill ${this.fillDensity}%`;
+  }
+
   setSpeed(e) {
     this.speed = parseInt(e.target.value, 10);
+    document.getElementById("speed-label").textContent = `Speed ${this.speed}%`;
   }
 
   updateStats() {

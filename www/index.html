@@ -26,8 +26,13 @@
       <nav>
         <button id="play-pause">Play</button>
         <button id="reset">Reset</button>
-        <button id="randomize">Randomize</button>
+        <div class="fill-control">
+          <span class="slider-label" id="fill-label">Fill 30%</span>
+          <input type="range" id="fill-density" min="0" max="100" value="30" />
+          <button id="randomize">Apply</button>
+        </div>
         <div class="speed-control">
+          <span class="slider-label" id="speed-label">Speed 50%</span>
           <input type="range" id="speed" min="1" max="100" value="50" />
         </div>
       </nav>
